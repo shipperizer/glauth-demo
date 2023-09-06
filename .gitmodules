@@ -1,0 +1,3 @@
+[submodule "glauth"]
+	path = glauth
+	url = git@github.com:glauth/glauth.git
