@@ -1,0 +1,43 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+build:
+  artifacts:
+    - image: glauth-demo
+      sync:
+        infer:
+          - glauth/
+      docker:
+      platforms:
+        - linux/amd64
+  local:
+    push: true
+manifests:
+  rawYaml:
+    - deployments/kubectl/*
+deploy:
+  helm:
+    releases:
+      - name: postgresql
+        remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
+        setValues:
+          auth.username: glauth
+          auth.password: glauth
+          auth.database: glauth
+portForward:
+  - resourceType: service
+    resourceName: glauth
+    namespace: default
+    port: 3893
+    localPort: 13893
+  - resourceType: service
+    resourceName: glauth
+    namespace: default
+    port: 5555
+    localPort: 15555
+  - resourceType: service
+    resourceName: postgresql
+    namespace: default
+    port: 5432
+    localPort: 15432
+
+    
