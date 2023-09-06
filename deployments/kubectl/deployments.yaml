@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: glauth
+  name: glauth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: glauth
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: glauth
+    spec:
+      serviceAccountName: glauth
+      containers:
+        - name: glauth
+          image: glauth-demo
+          ports:
+            - containerPort: 3893
+            - containerPort: 5555
+          volumeMounts:
+            - mountPath: /config.cfg
+              subPath: config.cfg
+              name: glauth-config
+      restartPolicy: Always
+      volumes:
+        - name: glauth-config
+          configMap:
+            name: glauth-config

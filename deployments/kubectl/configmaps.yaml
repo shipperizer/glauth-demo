@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: glauth-config
+data:
+  config.cfg: |
+    #################
+    # glauth.conf
+
+    #################
+    # General configuration.
+    debug = true
+    # syslog = true
+
+    # This ([ldap] and [ldaps]) is the new server-config format
+    [ldap]
+      enabled = true
+      listen = "0.0.0.0:3893"
+
+    [ldaps]
+      enabled = false
+
+    #################
+    # The backend section controls the data store.
+    [backend]
+      datastore = "plugin"
+      plugin = "postgres.so"
+      pluginhandler = "NewPostgresHandler"
+      baseDN = "dc=glauth,dc=com"
+
+      database = "host=postgresql.default.svc.cluster.local port=5432 dbname=glauth user=glauth password=glauth sslmode=disable"
+
+      ## Configure dn format to use structures like 
+      ## "uid=serviceuser,cn=svcaccts,$BASEDN" instead of "cn=serviceuser,ou=svcaccts,$BASEDN"
+      ## to help ease migrations from other LDAP systems
+      nameformat = "cn"
+      groupformat = "ou"
+
+    #################
+    # Enable and configure the optional REST API here.
+    [api]
+      enabled = true
+      tls = false # enable TLS for production!!
+      listen = "0.0.0.0:5555"
+      cert = "cert.pem"
+      key = "key.pem"
