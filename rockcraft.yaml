@@ -1,0 +1,60 @@
+name: glauth
+
+base: bare
+build-base: ubuntu:22.04
+version: '0.0.1' # x-release-please-version
+summary: GLAuth
+description: GLAuth
+license: Apache-2.0
+
+platforms:
+  amd64:
+  # arm64:
+
+services:
+  glauth:
+    override: replace
+    command: /glauth -c config.cfg
+    startup: enabled
+
+parts:
+  glauth:
+    plugin: make
+    build-snaps:
+      - go
+    build-packages:
+      - libpam0g-dev
+    source-subdir: v2
+    source-type: git
+    source: https://github.com/glauth/glauth
+    source-branch: dev
+    override-build: |
+      export GOARCH=$(go env GOARCH)
+
+      # Build GLAuth
+
+      make -C $CRAFT_PART_SRC_WORK pull-base-plugins
+
+      # plugin_pam fails so leaving that out
+
+      PLUGIN_ARCH=$GOARCH make -C $CRAFT_PART_SRC_WORK -j$CRAFT_PARALLEL_BUILD_COUNT plugin_postgres plugin_mysql plugin_sqlite linux$GOARCH
+
+      # Grab built binary
+
+      mkdir -p $CRAFT_PART_INSTALL/bin
+
+      cp -r $CRAFT_PART_SRC_WORK/bin/*/{glauth,*.so} $CRAFT_PART_INSTALL/bin/
+      cp $CRAFT_PART_SRC_WORK/sample-simple.cfg $CRAFT_PART_INSTALL/bin/config.cfg
+    organize:
+      bin/glauth: glauth
+      bin/postgres.so: postgres.so
+      bin/mysql.so: mysql.so
+      bin/sqlite.so: sqlite.so
+      bin/config.cfg: config.cfg
+    stage:
+      - glauth
+      - postgres.so
+      - mysql.so
+      - sqlite.so
+      - config.cfg
+  
