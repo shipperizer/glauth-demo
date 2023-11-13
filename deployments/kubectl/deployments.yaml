@@ -23,10 +23,10 @@ spec:
           ports:
             - containerPort: 3893
             - containerPort: 5555
-          volumeMounts:
-            - mountPath: /config.cfg
-              subPath: config.cfg
-              name: glauth-config
+          # volumeMounts:
+          #   - mountPath: /config.cfg
+          #     subPath: config.cfg
+          #     name: glauth-config
       restartPolicy: Always
       volumes:
         - name: glauth-config
