@@ -37,7 +37,7 @@ LABEL org.opencontainers.image.source=https://github.com/shipperizer/glauth-demo
 WORKDIR /
 
 COPY --from=builder /var/app/glauth/v2/bin/${GOOS}${GOARCH}/glauth /glauth
-COPY --from=builder /var/app/glauth/v2/bin/${GOOS}${GOARCH}/postgres.so /postgres.so
+# COPY --from=builder /var/app/glauth/v2/bin/${GOOS}${GOARCH}/postgres.so /postgres.so
 COPY --from=builder /var/app/glauth/v2/sample-simple.cfg /config.cfg
 
 CMD ["/glauth", "-c", "config.cfg"]
