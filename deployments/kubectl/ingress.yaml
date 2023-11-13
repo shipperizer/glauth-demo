@@ -1,0 +1,16 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: glauth-tcp
+spec:
+  routes:
+    # - match: HostSNI(`glauth.internal:10443`)
+    - match: HostSNI(`*`)
+      services:
+      - name: glauth
+        port: 3893
+  tls:
+    domains:
+    - main: glauth.internal
+    secretName: glauth-tcp-tls

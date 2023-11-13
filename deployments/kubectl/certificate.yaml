@@ -1,0 +1,31 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: glauth-tcp
+  namespace: default
+spec:
+  subject:
+    organizations:
+      - canonical
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  # At least one of a DNS Name, URI, or IP address is required.
+  dnsNames:
+  - glauth.internal
+  - glauth.default.svc.cluster.local
+  # ipAddresses:
+  #   - 192.168.0.5
+  # Issuer references are always required.
+  issuerRef:
+    kind: ClusterIssuer
+    name: selfsigned-cluster-issuer
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  secretName: glauth-tcp-tls
+
