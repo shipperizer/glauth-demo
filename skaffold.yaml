@@ -17,12 +17,22 @@ manifests:
 deploy:
   helm:
     releases:
-      - name: postgresql
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
+      # - name: postgresql
+      #   remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
+
+      #   setValues:
+      #     auth.username: glauth
+      #     auth.password: glauth
+      #     auth.database: glauth
+      - name: traefik
+        repo: https://traefik.github.io/charts
+        remoteChart: traefik
+      - name: cert-manager
+        repo: https://charts.jetstack.io
+        remoteChart: cert-manager
         setValues:
-          auth.username: glauth
-          auth.password: glauth
-          auth.database: glauth
+          installCRDs: true 
+          
 portForward:
   - resourceType: service
     resourceName: glauth
@@ -34,10 +44,20 @@ portForward:
     namespace: default
     port: 5555
     localPort: 15555
+  # - resourceType: service
+  #   resourceName: postgresql
+  #   namespace: default
+  #   port: 5432
+  #   localPort: 15432
   - resourceType: service
-    resourceName: postgresql
+    resourceName: traefik
     namespace: default
-    port: 5432
-    localPort: 15432
+    port: 80
+    localPort: 10080
+  - resourceType: service
+    resourceName: traefik
+    namespace: default
+    port: 443
+    localPort: 10443
 
     
