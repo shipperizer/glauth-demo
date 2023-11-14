@@ -1,0 +1,56 @@
+ingressRoute:
+  dashboard:
+    enabled: true
+    matchRule: Host(`traefik.internal`) && PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+logs:
+  general:
+    level: DEBUG
+  access:
+    enabled: true
+
+ports:
+  ldap:
+    port: 3893
+    expose: true
+    exposedPort: 3893
+    protocol: TCP
+  ldaps:
+    port: 3894
+    expose: true
+    exposedPort: 3894
+    protocol: TCP
+  traefik:
+    port: 9000
+    expose: true
+    exposedPort: 9000
+    protocol: TCP
+  web:
+    port: 8000
+    expose: true
+    exposedPort: 80
+
+    protocol: TCP
+  websecure:
+    port: 8443
+    expose: true
+    exposedPort: 443
+    protocol: TCP
+    http3:
+      enabled: false
+    tls:
+      enabled: true
+      options: ""
+      certResolver: ""
+      domains: []
+    middlewares: []
+  metrics:
+    port: 9100
+    expose: false
+    exposedPort: 9100
+    protocol: TCP
+
+
+# additionalArguments:
+# - --entrypoints.ldap-tcp.address=:3893/tcp
+# - --entrypoints.ldap-udp.address=:3893/udp
+# - --entrypoints.ldaps.address=:3894/tcp

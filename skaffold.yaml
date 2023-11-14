@@ -23,10 +23,16 @@ deploy:
       #   setValues:
       #     auth.username: glauth
       #     auth.password: glauth
-      #     auth.database: glauth
-      - name: traefik
-        repo: https://traefik.github.io/charts
-        remoteChart: traefik
+      #     auth.database: glauth 
+      - name: postgresql
+        remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
+        valuesFiles: ["deployments/helm/postgresql/values.yaml"]
+      # - name: traefik
+      #   repo: https://traefik.github.io/charts
+      #   remoteChart: traefik
+      #   upgradeOnChange: true
+      #   valuesFiles:
+      #   - deployments/helm/traefik/values.yaml
       - name: cert-manager
         repo: https://charts.jetstack.io
         remoteChart: cert-manager
@@ -38,7 +44,12 @@ portForward:
     resourceName: glauth
     namespace: default
     port: 3893
-    localPort: 13893
+    localPort: 23893
+  - resourceType: service
+    resourceName: glauth
+    namespace: default
+    port: 3894
+    localPort: 23894
   - resourceType: service
     resourceName: glauth
     namespace: default
@@ -49,15 +60,29 @@ portForward:
   #   namespace: default
   #   port: 5432
   #   localPort: 15432
-  - resourceType: service
-    resourceName: traefik
-    namespace: default
-    port: 80
-    localPort: 10080
-  - resourceType: service
-    resourceName: traefik
-    namespace: default
-    port: 443
-    localPort: 10443
-
+  # - resourceType: service
+  #   resourceName: traefik
+  #   namespace: default
+  #   port: 9000
+  #   localPort: 19000
+  # - resourceType: service
+  #   resourceName: traefik
+  #   namespace: default
+  #   port: 80
+  #   localPort: 10080
+  # - resourceType: service
+  #   resourceName: traefik
+  #   namespace: default
+  #   port: 443
+  #   localPort: 10443
+  # - resourceType: service
+  #   resourceName: traefik
+  #   namespace: default
+  #   port: 3893
+  #   localPort: 13893
+  # - resourceType: service
+  #   resourceName: traefik
+  #   namespace: default
+  #   port: 3894
+  #   localPort: 13894
     

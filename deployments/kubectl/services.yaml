@@ -9,6 +9,9 @@ spec:
     - name: ldap
       port: 3893
       targetPort: 3893
+    - name: ldaps
+      port: 3894
+      targetPort: 3894
     - name: web
       port: 5555
       targetPort: 5555

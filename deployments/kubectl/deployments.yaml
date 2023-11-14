@@ -16,14 +16,22 @@ spec:
       labels:
         app: glauth
     spec:
-      serviceAccountName: glauth
+      imagePullSecrets:
+      - name: regcred-github
       containers:
         - name: glauth
           image: glauth-demo
           ports:
             - containerPort: 3893
+            - containerPort: 3894
             - containerPort: 5555
-          # volumeMounts:
+          volumeMounts:
+          - mountPath: /glauth.crt
+            subPath: tls.crt
+            name: glauth-tls-secrets
+          - mountPath: /glauth.key
+            subPath: tls.key
+            name: glauth-tls-secrets
           #   - mountPath: /config.cfg
           #     subPath: config.cfg
           #     name: glauth-config
@@ -32,3 +40,6 @@ spec:
         - name: glauth-config
           configMap:
             name: glauth-config
+        - name: glauth-tls-secrets
+          secret:
+            secretName: glauth-tcp-tls
