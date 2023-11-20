@@ -17,28 +17,29 @@ manifests:
 deploy:
   helm:
     releases:
-      # - name: postgresql
-      #   remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
-
-      #   setValues:
-      #     auth.username: glauth
-      #     auth.password: glauth
-      #     auth.database: glauth 
-      - name: postgresql
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
-        valuesFiles: ["deployments/helm/postgresql/values.yaml"]
-      # - name: traefik
-      #   repo: https://traefik.github.io/charts
-      #   remoteChart: traefik
-      #   upgradeOnChange: true
-      #   valuesFiles:
-      #   - deployments/helm/traefik/values.yaml
       - name: cert-manager
         repo: https://charts.jetstack.io
         remoteChart: cert-manager
         setValues:
           installCRDs: true 
-          
+
+
+profiles:
+  - name: postgresql
+    requiresAllActivations: false
+    patches:
+    - op: remove
+      path: /build/artifacts/0
+    - op: remove
+      path: /manifests/rawYaml/0
+    deploy:
+      helm:
+        releases:
+        - name: postgresql
+          wait: false
+          remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
+          valuesFiles: ["deployments/helm/postgresql/values.yaml"]
+
 portForward:
   - resourceType: service
     resourceName: glauth
@@ -46,43 +47,7 @@ portForward:
     port: 3893
     localPort: 23893
   - resourceType: service
-    resourceName: glauth
+    resourceName: postgresql
     namespace: default
-    port: 3894
-    localPort: 23894
-  - resourceType: service
-    resourceName: glauth
-    namespace: default
-    port: 5555
-    localPort: 15555
-  # - resourceType: service
-  #   resourceName: postgresql
-  #   namespace: default
-  #   port: 5432
-  #   localPort: 15432
-  # - resourceType: service
-  #   resourceName: traefik
-  #   namespace: default
-  #   port: 9000
-  #   localPort: 19000
-  # - resourceType: service
-  #   resourceName: traefik
-  #   namespace: default
-  #   port: 80
-  #   localPort: 10080
-  # - resourceType: service
-  #   resourceName: traefik
-  #   namespace: default
-  #   port: 443
-  #   localPort: 10443
-  # - resourceType: service
-  #   resourceName: traefik
-  #   namespace: default
-  #   port: 3893
-  #   localPort: 13893
-  # - resourceType: service
-  #   resourceName: traefik
-  #   namespace: default
-  #   port: 3894
-  #   localPort: 13894
-    
+    port: 5432
+    localPort: 15432

@@ -6,11 +6,64 @@ global:
       password: "iam"
       postgresPassword: "iam"
 primary:
+  extraVolumeMounts:
+  - mountPath: /etc/ldap
+    name: ldap-config
+  - mountPath: /etc/ssl/certs/glauth.crt
+    subPath: tls.crt
+    name: glauth-tls-secrets
+  - mountPath: /etc/ssl/certs/glauth.key
+    subPath: tls.key
+    name: glauth-tls-secrets
+  - mountPath: /etc/ssl/certs/glauth-ca.crt
+    subPath: ca.crt
+    name: glauth-tls-secrets
+  extraVolumes:
+  - name: ldap-config
+    configMap:
+      name: ldap-config
+      items:
+      - key: ldap.conf
+        path: ldap.conf
+  - name: glauth-tls-secrets
+    secret:
+      secretName: glauth-tcp-tls
   initdb:
     scripts:
+      update-certs.sh: |
+        #!/bin/sh
+
+        apt update -y
+        apt install -y ca-certificates
+        update-ca-certificates
       init.sql: |
         CREATE DATABASE kratos;
         CREATE DATABASE hydra;
+
+
+readReplicas:
+  extraVolumeMounts:
+  - mountPath: /etc/ldap
+    name: ldap-config
+  - mountPath: /etc/ssl/certs/glauth.crt
+    subPath: tls.crt
+    name: glauth-tls-secrets
+  - mountPath: /etc/ssl/certs/glauth.key
+    subPath: tls.key
+    name: glauth-tls-secrets
+  - mountPath: /etc/ssl/certs/glauth-ca.crt
+    subPath: ca.crt
+    name: glauth-tls-secrets
+  extraVolumes:
+  - name: ldap-config
+    configMap:
+      name: ldap-config
+      items:
+      - key: ldap.conf
+        path: ldap.conf
+  - name: glauth-tls-secrets
+    secret:
+      secretName: glauth-tcp-tls
 
 auth:
   database: "iam"
@@ -23,6 +76,8 @@ audit:
 
 ldap:
   enabled: true
+  tls:
+    enabled: true
   server: "glauth.default.svc.cluster.local"
   port: "3893"
   basedn: "dc=glauth,dc=com"
@@ -41,3 +96,4 @@ ldap:
   # ldap.scheme	Set to ldaps to use LDAPS	""
   # ldap.tls.enabled	Se to true to enable TLS encryption	false
   # ldap.uri	LDAP URL beginning in the form ldap[s]://host[:port]/basedn. If provided, all the other LDAP parameters will be ignored.
+

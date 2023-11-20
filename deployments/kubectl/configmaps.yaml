@@ -44,3 +44,14 @@ data:
       listen = "0.0.0.0:5555"
       cert = "cert.pem"
       key = "key.pem"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ldap-config
+data:
+  ldap.conf: |
+    TLS_REQCERT     allow
+    TLS_CACERTDIR   /etc/ssl/certs/glauth-ca.crt
+    TLS_CERT        /etc/ssl/certs/glauth.crt
+    TLS_KEY         /etc/ssl/certs/glauth.key
