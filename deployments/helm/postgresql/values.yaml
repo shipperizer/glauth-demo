@@ -1,4 +1,5 @@
 global:
+  image: debug
   postgresql:
     auth:
       database: "iam"
@@ -6,18 +7,59 @@ global:
       password: "iam"
       postgresPassword: "iam"
 primary:
+  initContainers:
+  - name: copy-ca-certs
+    image: debian:11
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        mkdir -p /usr/local/share/ca-certificates
+        apt update
+        apt install -y ca-certificates
+        update-ca-certificates
+        ls -la /tmp/certs
+        cp /tmp/certs/* /usr/local/share/ca-certificates
+        ls -la /usr/local/share/ca-certificates
+        update-ca-certificates
+        cp -r /etc/ssl/certs /opt/bitnami/postgresql/certs
+        cat /etc/ssl/certs/ca-certificates.crt
+    volumeMounts:
+      - name: postgresql-ca-certificates
+        mountPath: /opt/bitnami/postgresql/certs
+      # - mountPath: /tmp/certs/selfsigned-ca.crt
+      #   subPath: ca.crt
+      #   name: selfsigned-ca
+      # - mountPath: /tmp/certs/selfsigned.crt
+      #   subPath: tls.crt
+      #   name: selfsigned-ca
+      # - mountPath: /tmp/certs/glauth.crt
+      #   subPath: tls.crt
+      #   name: glauth-tls-secrets
+      - mountPath: /tmp/certs/glauth-ca.crt
+        subPath: ca.crt
+        name: glauth-tls-secrets
+    volumes:
+      - name: postgresql-ca-certificates
+        emptyDir: {}
+      - name: selfsigned-ca
+        secret:
+          secretName: root-secret
+      - name: glauth-tls-secrets
+        secret:
+          secretName: glauth-tls
+
   extraVolumeMounts:
   - mountPath: /etc/ldap
     name: ldap-config
-  - mountPath: /etc/ssl/certs/glauth.crt
+  - mountPath: /usr/local/share/ca-certificates/glauth.crt
     subPath: tls.crt
     name: glauth-tls-secrets
-  - mountPath: /etc/ssl/certs/glauth.key
-    subPath: tls.key
-    name: glauth-tls-secrets
-  - mountPath: /etc/ssl/certs/glauth-ca.crt
+  - mountPath: /usr/local/share/ca-certificates/selfsigned.crt
     subPath: ca.crt
-    name: glauth-tls-secrets
+    name: selfsigned-ca
+  - name: postgresql-ca-certificates
+    mountPath: /etc/ssl
   extraVolumes:
   - name: ldap-config
     configMap:
@@ -25,21 +67,24 @@ primary:
       items:
       - key: ldap.conf
         path: ldap.conf
+  - name: postgresql-ca-certificates
+    emptyDir: {}
   - name: glauth-tls-secrets
     secret:
-      secretName: glauth-tcp-tls
+      secretName: glauth-tls
+  - name: selfsigned-ca
+    secret:
+      secretName: root-secret
   initdb:
     scripts:
-      update-certs.sh: |
-        #!/bin/sh
-
-        apt update -y
-        apt install -y ca-certificates
-        update-ca-certificates
+      ca.sh: |
+        cat /etc/ssl/certs/ca-certificates.crt
       init.sql: |
         CREATE DATABASE kratos;
         CREATE DATABASE hydra;
-
+      roles.sql: |
+        CREATE ROLE johndoe WITH LOGIN;
+        CREATE ROLE hackers WITH LOGIN;
 
 readReplicas:
   extraVolumeMounts:
@@ -63,7 +108,7 @@ readReplicas:
         path: ldap.conf
   - name: glauth-tls-secrets
     secret:
-      secretName: glauth-tcp-tls
+      secretName: glauth-tls
 
 auth:
   database: "iam"
@@ -78,7 +123,7 @@ ldap:
   enabled: true
   tls:
     enabled: true
-  server: "glauth.default.svc.cluster.local"
+  server: "glauth.test.svc.cluster.local"
   port: "3893"
   basedn: "dc=glauth,dc=com"
   binddn: "cn=serviceuser,ou=svcaccts,ou=users,dc=glauth,dc=com"
