@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debian
+spec:
+  containers:
+  - name: debian
+    image: debian:11
+    command: ['sh', '-c', 'echo "Hello, Kubernetes!" && sleep 3600']
+    volumeMounts:
+    - mountPath: /tmp/certs/selfsigned-ca.crt
+      subPath: ca.crt
+      name: selfsigned-ca
+    - mountPath: /tmp/certs/selfsigned.crt
+      subPath: tls.crt
+      name: selfsigned-ca
+    - mountPath: /tmp/certs/glauth.crt
+      subPath: tls.crt
+      name: glauth-tls-secrets
+    - mountPath: /tmp/certs/glauth-ca.crt
+      subPath: ca.crt
+      name: glauth-tls-secrets
+  restartPolicy: Always
+  volumes:
+    - name: glauth-config
+      configMap:
+        name: glauth-config
+    - name: glauth-tls-secrets
+      secret:
+        secretName: glauth-tls
+    - name: selfsigned-ca
+      secret:
+        secretName: root-secret

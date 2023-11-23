@@ -32,9 +32,9 @@ spec:
           - mountPath: /glauth.key
             subPath: tls.key
             name: glauth-tls-secrets
-          #   - mountPath: /config.cfg
-          #     subPath: config.cfg
-          #     name: glauth-config
+          - mountPath: /config.cfg
+            subPath: config.cfg
+            name: glauth-config
       restartPolicy: Always
       volumes:
         - name: glauth-config
@@ -42,4 +42,4 @@ spec:
             name: glauth-config
         - name: glauth-tls-secrets
           secret:
-            secretName: glauth-tcp-tls
+            secretName: glauth-tls

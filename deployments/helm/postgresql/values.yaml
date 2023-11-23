@@ -16,7 +16,8 @@ primary:
       - |
         mkdir -p /usr/local/share/ca-certificates
         apt update
-        apt install -y ca-certificates
+        apt install -y ca-certificates openssl
+        openssl version
         update-ca-certificates
         ls -la /tmp/certs
         cp /tmp/certs/* /usr/local/share/ca-certificates
@@ -55,8 +56,14 @@ primary:
   - mountPath: /usr/local/share/ca-certificates/glauth.crt
     subPath: tls.crt
     name: glauth-tls-secrets
-  - mountPath: /usr/local/share/ca-certificates/selfsigned.crt
+  - mountPath: /usr/local/share/ca-certificates/glauth-ca.crt
     subPath: ca.crt
+    name: glauth-tls-secrets
+  - mountPath: /usr/local/share/ca-certificates/selfsigned-ca.crt
+    subPath: ca.crt
+    name: selfsigned-ca
+  - mountPath: /usr/local/share/ca-certificates/selfsigned.crt
+    subPath: tls.crt
     name: selfsigned-ca
   - name: postgresql-ca-certificates
     mountPath: /etc/ssl
@@ -77,8 +84,6 @@ primary:
       secretName: root-secret
   initdb:
     scripts:
-      ca.sh: |
-        cat /etc/ssl/certs/ca-certificates.crt
       init.sql: |
         CREATE DATABASE kratos;
         CREATE DATABASE hydra;
@@ -90,15 +95,20 @@ readReplicas:
   extraVolumeMounts:
   - mountPath: /etc/ldap
     name: ldap-config
-  - mountPath: /etc/ssl/certs/glauth.crt
+  - mountPath: /usr/local/share/ca-certificates/glauth.crt
     subPath: tls.crt
     name: glauth-tls-secrets
-  - mountPath: /etc/ssl/certs/glauth.key
-    subPath: tls.key
-    name: glauth-tls-secrets
-  - mountPath: /etc/ssl/certs/glauth-ca.crt
+  - mountPath: /usr/local/share/ca-certificates/glauth-ca.crt
     subPath: ca.crt
     name: glauth-tls-secrets
+  - mountPath: /usr/local/share/ca-certificates/selfsigned-ca.crt
+    subPath: ca.crt
+    name: selfsigned-ca
+  - mountPath: /usr/local/share/ca-certificates/selfsigned.crt
+    subPath: tls.crt
+    name: selfsigned-ca
+  - name: postgresql-ca-certificates
+    mountPath: /etc/ssl
   extraVolumes:
   - name: ldap-config
     configMap:
@@ -106,9 +116,14 @@ readReplicas:
       items:
       - key: ldap.conf
         path: ldap.conf
+  - name: postgresql-ca-certificates
+    emptyDir: {}
   - name: glauth-tls-secrets
     secret:
       secretName: glauth-tls
+  - name: selfsigned-ca
+    secret:
+      secretName: root-secret
 
 auth:
   database: "iam"
@@ -123,7 +138,7 @@ ldap:
   enabled: true
   tls:
     enabled: true
-  server: "glauth.test.svc.cluster.local"
+  server: "glauth.default.svc.cluster.local"
   port: "3893"
   basedn: "dc=glauth,dc=com"
   binddn: "cn=serviceuser,ou=svcaccts,ou=users,dc=glauth,dc=com"

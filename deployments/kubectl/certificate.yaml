@@ -1,7 +1,7 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: glauth-tcp
+  name: glauth
   namespace: default
 spec:
   subject:
@@ -24,8 +24,8 @@ spec:
   # Issuer references are always required.
   issuerRef:
     kind: ClusterIssuer
-    name: selfsigned-cluster-issuer
+    name: selfsigned-issuer
   duration: 2160h # 90d
   renewBefore: 360h # 15d
-  secretName: glauth-tcp-tls
+  secretName: glauth-tls
 
