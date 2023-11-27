@@ -8,6 +8,68 @@ GLAuth demo
 * if in need to build locally, install `libpam0g-dev` package
 
 
+## LDAP over TLS
+
+simply run `make dev`, once all is done please target your postgresql client to port 15432 (where johndoe is a user in the prebaked ldap server):
+
+```
+shipperizer in ~/shipperizer/test-glauth-dedmo/glauth-demo on tls/ldap ● ● λ pgcli -h 127.0.0.1 -p 15432 -u johndoe -d iam
+connection failed: FATAL:  role "johndoe" does not exist
+```
+
+if you login with postgres and create the role:
+
+```
+shipperizer in ~/shipperizer/test-glauth-dedmo/glauth-demo on tls/ldap ● ● λ pgcli -h 127.0.0.1 -p 15432 -u postgres          
+Server: PostgreSQL 16.1
+Version: 3.5.0
+Home: http://pgcli.com
+postgres@127:postgres> create role johndoe with login;
+CREATE ROLE
+Time: 0.005s
+postgres@127:postgres>                                                                                                                                                                                                                                                                  
+Goodbye!
+```
+
+then you should be able to login 
+```
+shipperizer in ~/shipperizer/test-glauth-dedmo/glauth-demo on tls/ldap ● ● λ pgcli -h 127.0.0.1 -p 15432 -u johndoe -d iam     
+Server: PostgreSQL 16.1
+Version: 3.5.0
+Home: http://pgcli.com
+johndoe@127:iam>
+
+```
+
+see logs on glauth to extra check
+
+```
+Mon, 27 Nov 2023 15:25:47 +0000 INF Bind request basedn=dc=glauth,dc=com binddn=cn=serviceuser,ou=svcaccts,ou=users,dc=glauth,dc=com src=10.1.245.169:51834
+Mon, 27 Nov 2023 15:25:47 +0000 INF Bind success binddn=cn=serviceuser,ou=svcaccts,ou=users,dc=glauth,dc=com src=10.1.245.169:51834
+Mon, 27 Nov 2023 15:25:47 +0000 INF Search request basedn=dc=glauth,dc=com binddn=cn=serviceuser,ou=svcaccts,ou=users,dc=glauth,dc=com filter=(uid=johndoe) scope=2 searchbasedn=dc=glauth,dc=com src=10.1.245.169:51834
+Mon, 27 Nov 2023 15:25:47 +0000 INF Search request special case="top-level browse"
+Mon, 27 Nov 2023 15:25:47 +0000 INF AP: Top-Level Browse OK filter=(uid=johndoe)
+Mon, 27 Nov 2023 15:25:47 +0000 INF Bind request basedn=dc=glauth,dc=com binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com src=10.1.245.169:51838
+Mon, 27 Nov 2023 15:25:47 +0000 INF Attempt to bind app pw failed binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com index=0 src=10.1.245.169:51838
+Mon, 27 Nov 2023 15:25:47 +0000 INF Attempt to bind app pw failed binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com index=1 src=10.1.245.169:51838
+Mon, 27 Nov 2023 15:25:47 +0000 INF Attempt to bind app pw failed binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com index=2 src=10.1.245.169:51838
+Mon, 27 Nov 2023 15:25:47 +0000 INF Bind success binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com src=10.1.245.169:51838
+Mon, 27 Nov 2023 15:25:47 +0000 INF Bind request basedn=dc=glauth,dc=com binddn=cn=serviceuser,ou=svcaccts,ou=users,dc=glauth,dc=com src=10.1.245.169:51846
+Mon, 27 Nov 2023 15:25:47 +0000 INF Bind success binddn=cn=serviceuser,ou=svcaccts,ou=users,dc=glauth,dc=com src=10.1.245.169:51846
+Mon, 27 Nov 2023 15:25:47 +0000 INF Search request basedn=dc=glauth,dc=com binddn=cn=serviceuser,ou=svcaccts,ou=users,dc=glauth,dc=com filter=(uid=johndoe) scope=2 searchbasedn=dc=glauth,dc=com src=10.1.245.169:51846
+Mon, 27 Nov 2023 15:25:47 +0000 INF Search request special case="top-level browse"
+Mon, 27 Nov 2023 15:25:47 +0000 INF AP: Top-Level Browse OK filter=(uid=johndoe)
+Mon, 27 Nov 2023 15:25:47 +0000 INF Bind request basedn=dc=glauth,dc=com binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com src=10.1.245.169:51848
+Mon, 27 Nov 2023 15:25:47 +0000 INF Attempt to bind app pw failed binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com index=0 src=10.1.245.169:51848
+Mon, 27 Nov 2023 15:25:47 +0000 INF Attempt to bind app pw failed binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com index=1 src=10.1.245.169:51848
+Mon, 27 Nov 2023 15:25:47 +0000 INF Attempt to bind app pw failed binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com index=2 src=10.1.245.169:51848
+Mon, 27 Nov 2023 15:25:47 +0000 INF Bind success binddn=cn=johndoe,ou=superheros,ou=users,dc=glauth,dc=com src=10.1.245.169:51848
+Mon, 27 Nov 2023 15:25:55 +0000 DBG Tick value=2023-11-27T15:25:55Z
+Mon, 27 Nov 2023 15:26:10 +0000 DBG Tick value=2023-11-27T15:26:10Z
+Mon, 27 Nov 2023 15:26:25 +0000 DBG Tick value=2023-11-27T15:26:25Z
+```
+
+
 
 ## setup on microk8s
 
@@ -175,3 +237,5 @@ result: 50 Insufficient access
 ```
 
 or use the ui (partially working) pon `localhost:15555`
+
+
